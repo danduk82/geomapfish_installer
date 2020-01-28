@@ -22,6 +22,9 @@ function pull_images(){
 }
 
 function pack_images(){
+    if [ ! -d images ]; then
+        mkdir images
+    fi
     for i in ${!map_images[@]}; do
         docker save $i > ${map_images[$i]}
     done
