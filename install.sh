@@ -12,7 +12,17 @@ declare -A map_images=(
 )
 
 function usage(){
-    echo "some help"
+    echo "usage: $0 [options]"
+    echo ""
+    echo "OPTIONS:"
+    echo "  - h : show this help"
+    echo "* INSTALL:"
+    echo "  - i : install the project"
+    echo "  - u : unpack images"
+    echo "* PACKAGING:"
+    echo "  - p : pack images"
+    echo "  - P : pull images"
+    echo "  - g : checkout geomapfish project"
 }
 
 function pull_images(){
@@ -37,7 +47,7 @@ function unpack_images(){
 }
 
 # MAIN
-while getopts "h?vx:upP" opt; do
+while getopts "h?vx:upaPg" opt; do
     case "${opt}" in
     h|\?)
         usage
@@ -50,6 +60,11 @@ while getopts "h?vx:upP" opt; do
     p)  pack_images
         ;;
     P)  pull_images
+        ;;
+    g)  if [ -d ./package_gmf ]; then
+          rm -rf ./package_gmf 
+        fi
+	rsync -a --exclude='.git*' ../package_gmf .
         ;;
     esac
 done
