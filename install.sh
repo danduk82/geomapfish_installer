@@ -53,31 +53,20 @@ function unpack_images(){
 function check_version() {
 	min_version=$1
 	cur_version=$2
-	res=$(python3 -c "print('$min_version' < '$cur_version')")
+	res=$(python3 -c "print('$min_version' <= '$cur_version')")
 	if [ "${res}" = "False" ] ; then
-		/bin/false
-	else
-		/bin/true
+		echo "CRITICAL: '${3}' version not supported, please use at least version $min_version"
+		echo "the current version detected on the system is : $cur_version"
+		exit 1
 	fi
 }
 
 function check_dependencies() {
 	# check docker version
 	docker_cur_version=$(docker --version| awk '{print $3}' | sed 's/,//g')
-	if [[ $(check_version $DOCKER_VERSION $docker_cur_version) ]] ; then
-		echo "CRITICAL: docker version not supported, please use at least version $DOCKER_VERSION"
-		echo "the current version detected on the system is : $docker_cur_version"
-		exit 1
-	fi
-
-
+	check_version $DOCKER_VERSION $docker_cur_version docker
 	docker_compose_cur_version=$(docker-compose --version| awk '{print $3}' | sed 's/,//g')
-	if [[ $(check_version $DOCKER_COMPOSE_VERSION $docker_compose_cur_version) ]] ; then
-		echo "CRITICAL: docker version not supported, please use at least version $DOCKER_COMPOSE_VERSION"
-		echo "the current version detected on the system is : $docker_compose_cur_version"
-		exit 1
-	fi
-	/bin/true
+	check_version $DOCKER_COMPOSE_VERSION $docker_compose_cur_version docker-compose
 }
 
 function install() {
@@ -109,7 +98,7 @@ while getopts "h?icupaPg" opt; do
     g)  if [ -d ./package_gmf ]; then
           rm -rf ./package_gmf 
         fi
-	rsync -a --exclude='.git*' ../package_gmf .
+	rsync -a ../package_gmf .
         ;;
     esac
 done
