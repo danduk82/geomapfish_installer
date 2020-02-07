@@ -11,12 +11,16 @@ declare -A map_images=(
 ["camptocamp/postgres:10"]="images/postgresql.tar"
 )
 
+DOCKER_VERSION=19.03.5
+DOCKER_COMPOSE_VERSION=1.17.0
+
 function usage(){
     echo "usage: $0 [options]"
     echo ""
     echo "OPTIONS:"
     echo "  - h : show this help"
     echo "* INSTALL:"
+    echo "  - c : check dependencies"
     echo "  - i : install the project"
     echo "  - u : unpack images"
     echo "* PACKAGING:"
@@ -46,14 +50,55 @@ function unpack_images(){
     done
 }
 
+function check_version() {
+	min_version=$1
+	cur_version=$2
+	res=$(python3 -c "print('$min_version' < '$cur_version')")
+	if [ "${res}" = "False" ] ; then
+		/bin/false
+	else
+		/bin/true
+	fi
+}
+
+function check_dependencies() {
+	# check docker version
+	docker_cur_version=$(docker --version| awk '{print $3}' | sed 's/,//g')
+	if [[ $(check_version $DOCKER_VERSION $docker_cur_version) ]] ; then
+		echo "CRITICAL: docker version not supported, please use at least version $DOCKER_VERSION"
+		echo "the current version detected on the system is : $docker_cur_version"
+		exit 1
+	fi
+
+
+	docker_compose_cur_version=$(docker-compose --version| awk '{print $3}' | sed 's/,//g')
+	if [[ $(check_version $DOCKER_COMPOSE_VERSION $docker_compose_cur_version) ]] ; then
+		echo "CRITICAL: docker version not supported, please use at least version $DOCKER_COMPOSE_VERSION"
+		echo "the current version detected on the system is : $docker_compose_cur_version"
+		exit 1
+	fi
+	/bin/true
+}
+
+function install() {
+    check_dependencies
+    unpack_images
+    HERE=$PWD
+    cd package_gmf
+    ./scripts/initialize.sh
+    cd ${HERE}
+}
+
 # MAIN
-while getopts "h?vx:upaPg" opt; do
+while getopts "h?icupaPg" opt; do
     case "${opt}" in
     h|\?)
         usage
         exit 0
         ;;
-    x)  output_file=$OPTARG
+    c)  check_dependencies
+        ;;
+    i)  install
         ;;
     u)  unpack_images
         ;;
