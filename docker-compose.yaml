@@ -40,13 +40,6 @@ services:
         #      - QGIS_PROJECT_FILE=
         #      - GEOMAPFISH_ACCESSCONTROL_CONFIG=/etc/qgisserver/accesscontrol_config.yaml
 
-      #  tinyows:
-      #    extends:
-      #      file: docker-compose-lib.yaml
-      #      service: tinyows
-      #    volumes_from:
-      #      - config:ro
-
   redis:
     extends:
       file: docker-compose-lib.yaml
